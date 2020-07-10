@@ -76,8 +76,31 @@ int main(int argc, char* argv[]) {
 
 ### 1.2 QPoint
 
+The [QPointer](qpointer.html) class is a template class that provides guarded pointers to [QObject](qobject.html).
 
+A guarded pointer, [QPointer](qpointer.html)<T>, behaves like a normal C++ pointer T *, except that it is automatically set to 0 when the referenced object is destroyed (unlike normal C++ pointers, which become "dangling pointers" in such cases). T must be a subclass of [QObject](qobject.html).
+
+```c++
+void foo() {
+  mytest* t = new mytest();
+  QPointer<mytest> pt(t);
+  delete t;
+  if (pt) {
+    pt->setObjectName("parent");
+    mytest* child = new mytest(pt);
+    child->setObjectName("child");
+  }
+}
+```
 
 ### 1.3 QScopePoint
+
+```c++
+void foo() {
+  QScopedPointer<mytest> pt(new mytest());
+  pt->setObjectName("parent");
+}
+```
+
 ### 1.4 QSharePointer
 ### 1.5 QObject::Deletelater.
