@@ -46,7 +46,18 @@ int main(int argc, char* argv[]) {
 
    We recommend that you connect clean-up code to the [aboutToQuit()](https://doc.qt.io/qt-5/qcoreapplication.html#aboutToQuit) signal, instead of putting it in your application's `main()` function because on some platforms the exec() call may not return. For example, on Windows when the user logs off, the system terminates the process after Qt closes all top-level windows. 
 
-   
+```c++
+void test() {
+  QCoreApplication::instance()->exit();
+}
+
+int main(int argc, char* argv[]) {
+  QCoreApplication a(argc, argv);
+
+  QTimer::singleShot(1000, test);
+  return a.exec();
+}
+```
 
 2. [processEvents](https://doc.qt.io/qt-5/qcoreapplication.html#processEvents)
 
@@ -103,4 +114,35 @@ void foo() {
 ```
 
 ### 1.4 QSharePointer
-### 1.5 QObject::Deletelater.
+
+The QSharedPointer class holds a strong reference to a shared pointer. Like [shared_ptr](https://zh.cppreference.com/w/cpp/memory/shared_ptr) in the c++11.
+The QWeakPointer is an automatic weak reference to a pointer in C++. It cannot be used to dereference the pointer directly, but it can be used to verify if the pointer has been deleted or not in another context.
+Therefore, to access the pointer that QWeakPointer is tracking, you must first promote it to QSharedPointer and verify if the resulting object is null or not. QSharedPointer guarantees that the object isn't deleted, so if you obtain a non-null object, you may use the pointer. See QWeakPointer::toStrongRef() for an example.
+
+扩展：
+关于智能指针，[cppreferrence.com](https://zh.cppreference.com/w/cpp/memory/)中介绍的更为易懂。
+1. shared_ptr:
+std::shared_ptr 是通过指针保持对象共享所有权的智能指针。多个 shared_ptr 对象可占有同一对象。下列情况之一出现时销毁对象并解分配其内存：
+最后剩下的占有对象的 shared_ptr 被销毁；
+
+最后剩下的占有对象的 shared_ptr 被通过 operator= 或 reset() 赋值为另一指针。
+用 delete 表达式或在构造期间提供给 shared_ptr 的定制删除器销毁对象。
+shared_ptr 能在存储指向一个对象的指针时共享另一对象的所有权。此特性能用于在占有其所属对象时，指向成员对象。存储的指针为 get() 、解引用及比较运算符所访问。被管理指针是在 use_count 抵达零时传递给删除器者。
+2. weak_ptr:
+std::weak_ptr 是一种智能指针，它对被 std::shared_ptr 管理的对象存在非拥有性（“弱”）引用。在访问所引用的对象前必须先转换为 std::shared_ptr。
+
+std::weak_ptr 用来表达临时所有权的概念：当某个对象只有存在时才需要被访问，而且随时可能被他人删除时，可以使用 std::weak_ptr 来跟踪该对象。需要获得临时所有权时，则将其转换为 std::shared_ptr，此时如果原来的 std::shared_ptr 被销毁，则该对象的生命期将被延长至这个临时的 std::shared_ptr 同样被销毁为止。
+
+std::weak_ptr 的另一用法是打断 std::shared_ptr 所管理的对象组成的环状引用。若这种环被孤立（例如无指向环中的外部共享指针），则 shared_ptr 引用计数无法抵达零，而内存被泄露。能令环中的指针之一为弱指针以避免此情况。
+
+### 1.5 QObject::Deletelater
+
+// 没有完全理解，真实场景再考虑吧
+
+## 2 Container
+QList QVector QLinkedList QMap QSet QHash等
+容器类的使用类似STL中的容器，提供的函数多余STL（indexOf，removeAt，takeAt，uniqueKeys，startsWith...）。
+细微差别：
+[https://web.archive.org/web/20160902015144/http://blog.codeimproved.net/posts/qtl-stl.html](https://web.archive.org/web/20160902015144/http://blog.codeimproved.net/posts/qtl-stl.html)
+
+## 3 Working with settings
